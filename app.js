@@ -15,28 +15,27 @@ app.get('/', (req, res) => {
 
 app.get('/weather', async (req, res) => {
   try {
-    let weatherData;
     const { lat, lon, city } = req.query;
+    let weatherData;
 
     if (lat && lon) {
-      const query = `${lat},${lon}`;
-      weatherData = await getWeather(query);
+      weatherData = await getWeather(`${lat},${lon}`);
     } else if (city) {
       weatherData = await getWeather(city);
     } else {
-      return res.render('weather', {
-        weatherData: null,
-        message: 'Please provide a city name or coordinates.',
-      });
+      return res
+        .status(400)
+        .json({ error: 'Please provide a city or coordinates.' });
+    }
+
+    if (!weatherData || weatherData.error) {
+      return res.status(404).json({ error: 'Please enter a valid city' });
     }
 
     res.render('weather', { weatherData });
   } catch (error) {
     console.error('Error fetching weather:', error);
-    res.render('weather', {
-      weatherData: null,
-      message: 'Something went wrong. Try again.',
-    });
+    res.status(500).json({ error: 'Something went wrong. Try again.' });
   }
 });
 
