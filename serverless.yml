@@ -1,0 +1,35 @@
+service: express-ejs-lambda-v2
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-south-1
+
+functions:
+  app:
+    handler: handler.handler
+    events:
+      - httpApi:
+          path: /
+          method: GET
+      - httpApi:
+          path: /submit
+          method: POST
+      - httpApi:
+          path: /weather
+          method: GET
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+
+package:
+  exclude:
+    - .git/**
+    - .vscode/**
+  include:
+    - views/**
+    - public/**
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline

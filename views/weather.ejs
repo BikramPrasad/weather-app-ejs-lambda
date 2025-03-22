@@ -1,0 +1,340 @@
+<!-- weather.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Forecast</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+          --primary-gradient: linear-gradient(135deg, #00B4DB 0%, #0083B0 100%);
+          --night-gradient: linear-gradient(135deg, #2C5364 0%, #203A43 50%, #0F2027 100%);
+          --day-gradient: linear-gradient(135deg, #4CA1AF 0%, #2C3E50 100%);
+          --card-bg: rgba(255, 255, 255, 0.15);
+          --dark-text: #1a202c;
+          --light-text: rgba(255, 255, 255, 0.95);
+      }
+
+      body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          margin: 0;
+          padding: 0;
+          min-height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: var(--primary-gradient);
+          color: var(--light-text);
+      }
+
+      .container {
+          width: 90%;
+          max-width: 500px;
+          padding: 20px;
+      }
+
+      .weather-card {
+          backdrop-filter: blur(10px);
+          background: var(--card-bg);
+          border-radius: 24px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+          padding: 30px;
+          overflow: hidden;
+          position: relative;
+      }
+
+      .weather-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: <%= weatherData.current.is_day === 'yes' ? 'var(--day-gradient)' : 'var(--night-gradient)' %>;
+          opacity: 0.85;
+          z-index: -1;
+      }
+
+      .location-info {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 30px;
+      }
+
+      .location {
+          flex: 1;
+      }
+
+      .location-name {
+          font-size: 28px;
+          font-weight: 700;
+          margin: 0;
+      }
+
+      .location-country {
+          font-size: 16px;
+          opacity: 0.9;
+          margin: 4px 0 0 0;
+      }
+
+      .date-time {
+          text-align: right;
+          font-size: 14px;
+          opacity: 0.85;
+      }
+
+      .main-weather {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+      }
+
+      .temperature {
+          flex: 1;
+      }
+
+      .temp-value {
+          font-size: 64px;
+          font-weight: 700;
+          line-height: 1;
+          margin: 0;
+      }
+
+      .feels-like {
+          font-size: 14px;
+          margin: 8px 0 0 4px;
+          opacity: 0.85;
+      }
+
+      .weather-icon {
+          text-align: right;
+      }
+
+      .weather-icon img {
+          width: 80px;
+          height: 80px;
+          object-fit: contain;
+      }
+
+      .condition {
+          text-align: center;
+          font-size: 22px;
+          font-weight: 500;
+          margin-bottom: 30px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .weather-details {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+      }
+
+      .detail-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          transition: transform 0.2s;
+      }
+
+      .detail-item:hover {
+          transform: translateY(-3px);
+      }
+
+      .detail-icon {
+          font-size: 22px;
+          margin-bottom: 8px;
+      }
+
+      .detail-label {
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          opacity: 0.75;
+          margin-bottom: 4px;
+      }
+
+      .detail-value {
+          font-size: 18px;
+          font-weight: 600;
+      }
+
+      .day-night-indicator {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: <%= weatherData.current.is_day === 'yes' ? '#FFD700' : '#FFFFFF' %>;
+          box-shadow: 0 0 10px 2px <%= weatherData.current.is_day === 'yes' ? 'rgba(255, 215, 0, 0.5)' : 'rgba(255, 255, 255, 0.3)' %>;
+      }
+
+      .search-again {
+          text-align: center;
+          margin-top: 30px;
+      }
+
+      .search-btn {
+          background: rgba(255, 255, 255, 0.3);
+          border: none;
+          border-radius: 50px;
+          color: white;
+          padding: 12px 24px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          text-decoration: none;
+          display: inline-block;
+      }
+
+      .search-btn:hover {
+          background: rgba(255, 255, 255, 0.4);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (max-width: 480px) {
+          .container {
+              width: 95%;
+              padding: 10px;
+          }
+
+          .weather-card {
+              padding: 20px;
+          }
+
+          .temp-value {
+              font-size: 48px;
+          }
+
+          .weather-icon img {
+              width: 60px;
+              height: 60px;
+          }
+
+          .weather-details {
+              gap: 12px;
+          }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="weather-card">
+        <% if (weatherData && weatherData.location && weatherData.current) { %>
+        <div
+          class="day-night-indicator"
+          title="<%= weatherData.current.is_day === 'yes' ? 'Day time' : 'Night time' %>"
+        ></div>
+
+        <div class="location-info">
+          <div class="location">
+            <h1 class="location-name"><%= weatherData.location.name %></h1>
+            <p class="location-country">
+              <%= weatherData.location.region %>, <%=
+              weatherData.location.country %>
+            </p>
+          </div>
+          <div class="date-time">
+            <div><%= weatherData.location.localtime %></div>
+            <div>UTC <%= weatherData.location.utc_offset %></div>
+          </div>
+        </div>
+
+        <div class="main-weather">
+          <div class="temperature">
+            <h2 class="temp-value"><%= weatherData.current.temperature %>°C</h2>
+            <p class="feels-like">
+              Feels like <%= weatherData.current.feelslike %>°C
+            </p>
+          </div>
+          <div class="weather-icon">
+            <img
+              src="<%= weatherData.current.weather_icons[0] %>"
+              alt="<%= weatherData.current.weather_descriptions[0] %>"
+            />
+          </div>
+        </div>
+
+        <div class="condition">
+          <%= weatherData.current.weather_descriptions[0] %>
+        </div>
+
+        <div class="weather-details">
+          <div class="detail-item">
+            <div class="detail-icon"><i class="fas fa-wind"></i></div>
+            <div class="detail-label">Wind</div>
+            <div class="detail-value">
+              <%= weatherData.current.wind_speed %> km/h
+            </div>
+            <div class="detail-subtitle">
+              <%= weatherData.current.wind_dir %>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon"><i class="fas fa-tint"></i></div>
+            <div class="detail-label">Humidity</div>
+            <div class="detail-value"><%= weatherData.current.humidity %>%</div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon"><i class="fas fa-cloud"></i></div>
+            <div class="detail-label">Cloud Cover</div>
+            <div class="detail-value">
+              <%= weatherData.current.cloudcover %>%
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-compress-arrows-alt"></i>
+            </div>
+            <div class="detail-label">Pressure</div>
+            <div class="detail-value">
+              <%= weatherData.current.pressure %> mb
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon"><i class="fas fa-eye"></i></div>
+            <div class="detail-label">Visibility</div>
+            <div class="detail-value">
+              <%= weatherData.current.visibility %> km
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon"><i class="fas fa-sun"></i></div>
+            <div class="detail-label">UV Index</div>
+            <div class="detail-value"><%= weatherData.current.uv_index %></div>
+          </div>
+        </div>
+        <% } else { %>
+        <div class="error-message">
+          <h2>Weather data not available</h2>
+          <p>
+            Sorry, we couldn't retrieve the weather information at this time.
+          </p>
+        </div>
+        <% } %>
+      </div>
+
+      <div class="search-again">
+        <a href="/" class="search-btn">Search Another Location</a>
+      </div>
+    </div>
+  </body>
+</html>
